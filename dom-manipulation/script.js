@@ -154,7 +154,7 @@ async function syncQuotes() {
       quotes.push(...newOnes);
       saveQuotes();
       populateCategories();
-      displayNotification(`${newOnes.length} quote(s) synced from server.`);
+      displayNotification("Quotes synced with server!");
     }
   } catch (err) {
     console.error("Sync failed:", err);
