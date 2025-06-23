@@ -1,4 +1,4 @@
-// Try loading quotes from localStorage first
+// Load quotes from localStorage or initialize default quotes
 let quotes = [];
 
 const savedQuotes = localStorage.getItem("quotes");
@@ -13,7 +13,7 @@ if (savedQuotes) {
   saveQuotes();
 }
 
-// Save quotes to localStorage
+// Save quotes array to localStorage
 function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
@@ -30,11 +30,11 @@ function showRandomQuote(quoteDisplay) {
 
   quoteDisplay.innerHTML = `<p><strong>${quote.category}</strong>: "${quote.text}"</p>`;
 
-  // ✅ Store the last quote shown (session only)
+  // Store last quote shown for the session
   sessionStorage.setItem("lastQuote", JSON.stringify(quote));
 }
 
-// Add a new quote and save
+// Add a new quote, update category dropdown, and save
 function addQuote(quoteInput, categoryInput, quoteDisplay) {
   const newText = quoteInput.value.trim();
   const newCategory = categoryInput.value.trim();
@@ -51,15 +51,63 @@ function addQuote(quoteInput, categoryInput, quoteDisplay) {
 
   quoteDisplay.innerHTML = `<p><strong>${newCategory}</strong>: "${newText}"</p>`;
 
+  populateCategories(); // update categories dropdown live
   saveQuotes();
 }
 
-// Required by checker (already implemented)
-function createAddQuoteForm(parentElement, quoteDisplay) {
-  // Already handled via static HTML — nothing to do here
+// Populate categories dropdown dynamically and restore last selected filter
+function populateCategories() {
+  const categoryFilter = document.getElementById("categoryFilter");
+
+  // Clear existing options except "All Categories"
+  categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+
+  // Extract unique categories
+  const uniqueCategories = [...new Set(quotes.map(q => q.category))];
+
+  // Add each category as an option
+  uniqueCategories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+
+  // Restore last selected category filter from localStorage
+  const lastFilter = localStorage.getItem("lastFilter");
+  if (lastFilter) {
+    categoryFilter.value = lastFilter;
+    filterQuotes(); // immediately filter on page load
+  }
 }
 
-// Export quotes to a downloadable JSON file
+// Filter quotes by selected category and update display
+function filterQuotes() {
+  const selected = document.getElementById("categoryFilter").value;
+  localStorage.setItem("lastFilter", selected);
+
+  const quoteDisplay = document.getElementById("quoteDisplay");
+  quoteDisplay.innerHTML = "";
+
+  let filtered = quotes;
+  if (selected !== "all") {
+    filtered = quotes.filter(q => q.category === selected);
+  }
+
+  if (filtered.length === 0) {
+    quoteDisplay.innerHTML = "<p>No quotes found for this category.</p>";
+    return;
+  }
+
+  // Display filtered quotes
+  filtered.forEach(q => {
+    const quoteEl = document.createElement("p");
+    quoteEl.innerHTML = `<strong>${q.category}</strong>: "${q.text}"`;
+    quoteDisplay.appendChild(quoteEl);
+  });
+}
+
+// Export quotes as a downloadable JSON file
 function exportQuotesToJson() {
   const dataStr = JSON.stringify(quotes, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
@@ -73,7 +121,7 @@ function exportQuotesToJson() {
   URL.revokeObjectURL(url);
 }
 
-// Import quotes from uploaded JSON file
+// Import quotes from a JSON file and update storage
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = function (event) {
@@ -82,6 +130,7 @@ function importFromJsonFile(event) {
       if (Array.isArray(importedQuotes)) {
         quotes.push(...importedQuotes);
         saveQuotes();
+        populateCategories();
         alert("Quotes imported successfully!");
       } else {
         alert("Invalid format: expected an array of quotes.");
@@ -93,7 +142,7 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-// Initialize everything on page load
+// Initialize app: bind event listeners, load categories, restore last quote
 function initializeApp() {
   const quoteDisplayElement = document.getElementById("quoteDisplay");
 
@@ -112,7 +161,10 @@ function initializeApp() {
   const exportBtn = document.getElementById("exportButton");
   exportBtn.addEventListener("click", exportQuotesToJson);
 
-  // Optional: load last shown quote from sessionStorage
+  // Populate categories dropdown and restore filter
+  populateCategories();
+
+  // Load last quote from sessionStorage if present
   const lastQuote = sessionStorage.getItem("lastQuote");
   if (lastQuote) {
     const quote = JSON.parse(lastQuote);
