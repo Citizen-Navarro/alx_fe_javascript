@@ -11,8 +11,21 @@
   <!-- Quote display area -->
   <div id="quoteDisplay" style="margin-bottom: 1rem;"></div>
 
-  <!-- ✅ Button with the EXACT ID the checker is looking for -->
+  <!-- Show New Quote button -->
   <button id="newQuote">Show New Quote</button>
+
+  <!-- Add new quote form -->
+  <div style="margin-top: 2rem;">
+    <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+    <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+    <button id="addQuoteButton">Add Quote</button>
+  </div>
+
+  <!-- JSON Import + Export -->
+  <div style="margin-top: 2rem;">
+    <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+    <button id="exportButton">Export Quotes to JSON</button>
+  </div>
 
   <script src="script.js"></script>
 </body>
