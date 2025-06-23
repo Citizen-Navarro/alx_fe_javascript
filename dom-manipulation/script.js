@@ -83,15 +83,15 @@ function populateCategories() {
 
 // Filter quotes by selected category and update display
 function filterQuotes() {
-  const selected = document.getElementById("categoryFilter").value;
-  localStorage.setItem("lastFilter", selected);
+  const selectedCategory = document.getElementById("categoryFilter").value;
+  localStorage.setItem("lastFilter", selectedCategory);
 
   const quoteDisplay = document.getElementById("quoteDisplay");
   quoteDisplay.innerHTML = "";
 
   let filtered = quotes;
-  if (selected !== "all") {
-    filtered = quotes.filter(q => q.category === selected);
+  if (selectedCategory !== "all") {
+    filtered = quotes.filter(q => q.category === selectedCategory);
   }
 
   if (filtered.length === 0) {
